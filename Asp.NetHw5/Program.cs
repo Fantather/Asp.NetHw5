@@ -13,6 +13,29 @@ builder.Services.AddHttpClient<TmdbService>(client =>
 var app = builder.Build();
 app.UseStaticFiles();
 
+
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next(context);
+
+        if (context.Response.StatusCode == StatusCodes.Status404NotFound)
+        {
+            context.Response.ContentType = "text/html";
+            string errorPage = await File.ReadAllTextAsync("wwwroot/404.html");
+            await context.Response.WriteAsync(errorPage);
+        }
+    }
+    catch (Exception)
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "text/html";
+        string errorPage = await File.ReadAllTextAsync("wwwroot/404.html");
+        await context.Response.WriteAsync(errorPage);
+    }
+});
+
 app.MapGet("/", async (TmdbService service) =>
 {
     MovieResponse response = await service.GetMoviesAsync();
