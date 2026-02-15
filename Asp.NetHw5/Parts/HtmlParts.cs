@@ -179,14 +179,14 @@ namespace Asp.NetHw5.Parts
 
                 					<!-- header auth -->
                 					<div class="header__auth">
-                						<form action="search" class="header__search" method="post">
-                							<input class="header__search-input" type="text" placeholder="Search..."
-                                            value = "{query}">
-                							<button class="header__search-button" type="sumbit">
-                								<i class="icon ion-ios-search"></i>
+                						<form action="/search" class="header__search">
+                							<input class="header__search-input" type="text" placeholder="Search..." 
+                                            name="query" value="{query}">
+                							<button class="header__search-button" type="submit">
+                								<i class="ti ti-search"></i>
                 							</button>
                 							<button class="header__search-close" type="button">
-                								<i class="icon ion-md-close"></i>
+                								<i class="ti ti-x"></i>
                 							</button>
                 						</form>
 
