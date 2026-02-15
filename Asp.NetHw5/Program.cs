@@ -11,6 +11,7 @@ builder.Services.AddHttpClient<TmdbService>(client =>
 });
 
 var app = builder.Build();
+app.UseStaticFiles();
 
 app.MapGet("/", async (TmdbService service) =>
 {
@@ -20,5 +21,20 @@ app.MapGet("/", async (TmdbService service) =>
     return Results.Content(html, "text/html");
 });
 
-app.UseStaticFiles();
+app.MapGet("/search", async (TmdbService service, string query) =>
+{
+    MovieResponse response = await service.SearchMoviesAsync(query);
+    string html = HtmlParts.RenderPage(HtmlParts.RenderMovieList(response.Results));
+
+    return Results.Content(html, "text/html");
+});
+
+app.MapGet("/details/Id={Id:int}", async (TmdbService service, int Id) =>
+{
+    Movie movie = await service.GetMovieDetailsAsync(Id);
+    string html = HtmlParts.RenderMovieDetails(movie);
+
+    return Results.Content(html, "text/html");
+});
+
 app.Run();
