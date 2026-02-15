@@ -67,79 +67,97 @@ namespace Asp.NetHw5.Parts
                 """;
         }
 
-        public static string RenderMovieDetails(Movie movie)
+        public static string RenderMovieDetails(MovieDetails movie, IEnumerable<Movie> similarMovies)
         {
-            string body = $"""
+            string genresHtml = movie.Genres != null
+                ? string.Join("\n", movie.Genres.Select(g => $"<a href=\"#\">{g.Name}</a>"))
+                : "";
+
+            string countriesHtml = movie.ProductionCountries != null
+                ? string.Join(", ", movie.ProductionCountries.Select(c => c.Name))
+                : "Unknown";
+
+            string trailerKey = movie.Videos?.Results?
+                                            .FirstOrDefault(v => v.Site == "YouTube" && v.Type == "Trailer")?.Key ?? "";
+
+            string playerHtml = !string.IsNullOrEmpty(trailerKey)
+                ? $"<iframe width=\"100%\" height=\"100%\" style=\"aspect-ratio: 16/9; border-radius: 8px;\" src=\"https://www.youtube.com/embed/{trailerKey}\" frameborder=\"0\" allowfullscreen></iframe>"
+                : "<div style=\"padding: 50px; text-align: center; color: white; background: #1a1a1a; border-radius: 8px;\">Трейлер не найден</div>";
+
+            string similarMoviesHtml = string.Join("\n", similarMovies.Select(sm => 
+            $"""
+            <div class="col-6 col-sm-4 col-lg-3 col-xl-2">
+                <div class="item">
+                    <div class="item__cover">
+                        <img src="https://image.tmdb.org/t/p/w500{sm.PosterPath}" alt="">
+                        <a href="/details/Id={sm.Id}" class="item__play">
+                            <i class="ti ti-player-play-filled"></i>
+                        </a>
+                        <span class="item__rate item__rate--green">{sm.VoteAverage:F1}</span>
+                        <button class="item__favorite" type="button"><i class="ti ti-bookmark"></i></button>
+                    </div>
+                    <div class="item__content">
+                        <h3 class="item__title"><a href="/details/Id={sm.Id}">{sm.Title}</a></h3>
+                    </div>
+                </div>
+            </div>
+            """));
+
+            string body = 
+                $"""
                 <section class="section section--details">
-                	<!-- details content -->
-                	<div class="container">
-                		<div class="row">
-                			<!-- title -->
-                			<div class="col-12">
-                				<h1 class="section__title section__title--head">{movie.Title}</h1>
-                			</div>
-                			<!-- end title -->
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <h1 class="section__title section__title--head">{movie.Title}</h1>
+                            </div>
+                            <div class="col-12">
+                                <div class="item item--details">
+                                    <div class="row">
+                                        <div class="col-12 col-sm-4 col-md-4 col-lg-3 col-xl-3">
+                                            <div class="item__cover">
+                                                <img src="https://image.tmdb.org/t/p/w500{movie.PosterPath}" alt="">
+                                                <span class="item__rate item__rate--green">{movie.VoteAverage:F1}</span>
+                                                <button class="item__favorite item__favorite--static" type="button"><i class="ti ti-bookmark"></i></button>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 col-sm-8 col-md-8 col-lg-9 col-xl-9">
+                                            <div class="item__content">
+                                                <ul class="item__meta">
+                                                    <li><span>Genre:</span> {genresHtml}</li>
+                                                    <li><span>Premiere:</span> {movie.ReleaseDate}</li>
+                                                    <li><span>Running time:</span> {movie.Runtime} min</li>
+                                                    <li><span>Country:</span> {countriesHtml}</li>
+                                                </ul>
+                                                <div class="item__description" style="max-height: none; overflow: visible;">
+                                                    <p>{movie.Overview}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        </div>
+                                </div>
+                            </div>
+                            <div class="col-12" style="margin-top: 30px;">
+                                {playerHtml}
+                            </div>
+                            </div>
+                    </div>
+                </section>
 
-                			<!-- content -->
-                			<div class="col-12 col-xl-6">
-                				<div class="item item--details">
-                					<div class="row">
-                						<!-- card cover -->
-                						<div class="col-12 col-sm-5 col-md-5 col-lg-4 col-xl-6 col-xxl-5">
-                							<div class="item__cover">
-                								<img src="https://image.tmdb.org/t/p/w500{movie.PosterPath}" alt="">
-                								<span class="item__rate item__rate--green">{movie.VoteAverage}</span>
-                								<button class="item__favorite item__favorite--static" type="button"><i class="ti ti-bookmark"></i></button>
-                							</div>
-                						</div>
-                						<!-- end card cover -->
+                <section class="content">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <h2 class="section__title">You may also like...</h2>
+                            </div>
+                    
+                            {similarMoviesHtml}
 
-                						<!-- card content -->
-                						<div class="col-12 col-md-7 col-lg-8 col-xl-6 col-xxl-7">
-                							<div class="item__content">
-                								<ul class="item__meta">
-                									<li><span>Director:</span> <a href="actor.html">Vince Gilligan</a></li>
-                									<li><span>Cast:</span> <a href="actor.html">Brian Cranston</a> <a href="actor.html">Jesse Plemons</a> <a href="actor.html">Matt Jones</a> <a href="actor.html">Jonathan Banks</a> <a href="actor.html">Charles Baker</a> <a href="actor.html">Tess Harper</a></li>
-                									<li><span>Genre:</span> <a href="catalog.html">Action</a>
-                									<a href="catalog.html">Triler</a></li>
-                									<li><span>Premiere::</span> 2019</li>
-                									<li><span>Running time:</span> 128 min</li>
-                									<li><span>Country:</span> <a href="catalog.html">USA</a></li>
-                								</ul>
+                        </div>
+                    </div>
+                </section>
+            """;
 
-                								<div class="item__description">
-                									<p{movie.Overview}</p>
-                								</div>
-                							</div>
-                						</div>
-                						<!-- end card content -->
-                					</div>
-                				</div>
-                			</div>
-                			<!-- end content -->
-
-                			<!-- player -->
-                			<div class="col-12 col-xl-6">
-                				<video controls crossorigin playsinline poster="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-HD.jpg" id="player">
-                					<!-- Video files -->
-                					<source src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4" type="video/mp4" size="576">
-                					<source src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4" type="video/mp4" size="720">
-                					<source src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4" type="video/mp4" size="1080">
-
-                					<!-- Caption files -->
-                					<track kind="captions" label="English" srclang="en" src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-HD.en.vtt"
-                						default>
-                					<track kind="captions" label="Français" srclang="fr" src="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-HD.fr.vtt">
-
-                					<!-- Fallback for browsers that don't support the <video> element -->
-                					<a href="https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4" download>Download</a>
-                				</video>
-                			</div>
-                			<!-- end player -->
-                		</div>
-                	</div>
-                	<!-- end details content -->
-                """;
             return RenderPage(body);
         }
 

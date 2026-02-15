@@ -29,11 +29,19 @@ app.MapGet("/search", async (TmdbService service, string query) =>
     return Results.Content(html, "text/html");
 });
 
-app.MapGet("/details/Id={Id:int}", async (TmdbService service, int Id) =>
+app.MapGet("/details/Id={id:int}", async (TmdbService service, int id) =>
 {
-    Movie movie = await service.GetMovieDetailsAsync(Id);
-    string html = HtmlParts.RenderMovieDetails(movie);
+    MovieDetails? movie = await service.GetMovieDetailsAsync(id);
+    MovieResponse? similarResponse = await service.GetSimilarMoviesAsync(id);
 
+    IEnumerable<Movie> similarMovies = similarResponse?.Results?.Take(5) ?? Array.Empty<Movie>();
+
+    if (movie == null)
+    {
+        return Results.NotFound("Movie not found");
+    }
+
+    string html = HtmlParts.RenderMovieDetails(movie, similarMovies);
     return Results.Content(html, "text/html");
 });
 
