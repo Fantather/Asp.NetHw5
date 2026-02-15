@@ -26,5 +26,7 @@ namespace Asp.NetHw5.Services
             string jsonString = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<MovieResponse>(jsonString, options);
         }
+
+
     }
 }

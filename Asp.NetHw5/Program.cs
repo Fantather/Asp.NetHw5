@@ -1,3 +1,5 @@
+using Asp.NetHw5.Models;
+using Asp.NetHw5.Parts;
 using Asp.NetHw5.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,9 +12,13 @@ builder.Services.AddHttpClient<TmdbService>(client =>
 
 var app = builder.Build();
 
-app.MapGet("", () =>
+app.MapGet("/", async (TmdbService service) =>
 {
-    
+    MovieResponse response = await service.GetMoviesAsync();
+    string html = HtmlParts.RenderPage(HtmlParts.RenderMovieList(response.Results));
+
+    return Results.Content(html, "text/html");
 });
 
+app.UseStaticFiles();
 app.Run();
